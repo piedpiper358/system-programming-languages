@@ -1,0 +1,116 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+#include "lib.c"
+
+void foreach(llist_t* llist_ptr, void(*func)(llist_t* llist_ptr));
+llist_t* map(const llist_t * const llist_ptr, int(*func)(int value));
+void map_mut(llist_t* llist_ptr, int(*func)(int value));
+int foldl(llist_t* llist_ptr, int(*func)(int a, int b), int accum);
+llist_t* iterate(int(*func)(int a), int element, int length);
+int main( int argc, char** argv );
+
+void print_with_space(llist_t* llist_ptr);
+void print_with_newline(llist_t* llist_ptr);
+int square(int arg);
+int cube(int arg);
+int min(int a, int b);
+int max(int a, int b);
+int doubler(int arg);
+
+void print_with_space(llist_t* llist_ptr){  
+	printf("%i ", llist_ptr->value);
+}
+void print_with_newline(llist_t* llist_ptr){  
+	printf("%i\n", llist_ptr->value);
+}
+int square(int arg){  
+	return arg*arg;
+}
+int cube(int arg){  
+	return arg*arg*arg;
+}
+int min(int a, int b){  
+	return a<b ? a : b;
+}
+int max(int a, int b){  
+	return a>b ? a : b;
+}
+int doubler(int arg){  
+	return 2*arg;
+}
+
+int main( int argc, char** argv ) {
+	int number;
+	llist_t* llist=0;
+	printf("\nEnter the numbers\n");
+	while(scanf("%i", &number)!=EOF)
+	{
+		llist = list_add_front(llist, number);
+	}
+	/* ------------------------------------------------------ */
+	printf("\nLinked list separated by spaces:\n");
+	foreach(llist, print_with_space);
+	printf("\nLinked list separated by newlines:\n");
+	foreach(llist, print_with_newline);
+	/* ------------------------------------------------------ */
+	printf("\nSquared linked list:\n");
+	foreach(map(llist, square), print_with_newline);
+	printf("\nCubed linked list:\n");
+	foreach(map(llist, cube), print_with_newline);
+	/* ------------------------------------------------------ */
+	printf("\nMinimum number: %i\n", foldl(llist, min , INT_MAX));
+	printf("\nMaximum number: %i\n", foldl(llist, max , INT_MIN));
+	/* ------------------------------------------------------ */
+	printf("\nAbsolute value of the numbers in the linked list:\n");
+	map_mut(llist, abs);
+	foreach(llist, print_with_newline);
+	/* ------------------------------------------------------ */
+	printf("\nPowers of two from 0 to 10:\n");
+	foreach(iterate(doubler, 1, 10), print_with_newline);
+	return 0;
+}
+
+void foreach(llist_t* llist_ptr, void(*func)(llist_t* llist_ptr))
+{  
+	while(llist_ptr)
+	{
+		func(llist_ptr);
+		llist_ptr=llist_ptr->next;
+	}
+}
+
+llist_t* map(const llist_t * const llist_ptr, int(*func)(int a))
+{
+	return llist_ptr ? list_add_front(map(llist_ptr->next, func), func(llist_ptr->value)) : 0;
+}
+
+void map_mut(llist_t* llist_ptr, int(*func)(int a))
+{
+	while(llist_ptr)
+	{
+		llist_ptr->value=func(llist_ptr->value);
+		llist_ptr=llist_ptr->next;
+	}
+}
+
+int foldl(llist_t* llist_ptr, int(*func)(int a, int b), int rax)
+{
+	while(llist_ptr)
+	{
+		rax=func(rax, llist_ptr->value);
+		llist_ptr=llist_ptr->next;
+	}
+	return rax;
+}
+
+llist_t* iterate(int(*func)(int a), int element, int length)
+{
+	int i;
+	llist_t* llist_ptr = list_create(element);
+	for(i=0; i<length; i++)
+	{
+		llist_ptr = list_add_front(llist_ptr, func(llist_ptr->value));
+	}
+	return llist_ptr;
+}
